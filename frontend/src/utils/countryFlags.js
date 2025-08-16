@@ -24,6 +24,7 @@ const countryCodes = {
   '36': { flag: '🇭🇺', name: 'Hungary', code: 'HU' },
   '30': { flag: '🇬🇷', name: 'Greece', code: 'GR' },
   '351': { flag: '🇵🇹', name: 'Portugal', code: 'PT' },
+  '356': { flag: '🇲🇹', name: 'Malta', code: 'MT' },
   '380': { flag: '🇺🇦', name: 'Ukraine', code: 'UA' },
   '7': { flag: '🇷🇺', name: 'Russia', code: 'RU' },
   
