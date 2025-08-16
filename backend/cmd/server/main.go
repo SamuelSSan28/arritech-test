@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	// Project imports
+	_ "arritech-user-management/docs" // Swagger docs
 	httpHandler "arritech-user-management/internal/handler/http"
 	"arritech-user-management/internal/repository/mysql"
 	"arritech-user-management/internal/service"
@@ -16,11 +18,22 @@ import (
 	"arritech-user-management/pkg/logger"
 	"arritech-user-management/pkg/middleware"
 
+	// Third party imports
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/files"
 )
 
+// @title Arritech User Management API
+// @version 1.0
+// @description API para gerenciamento de usuários com funcionalidades de CRUD, busca, paginação e ordenação.
+// @contact.name Arritech Support
+// @contact.email support@arritech.com
+// @host localhost:8080
+// @BasePath /api/v1
+// @schemes http https
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {
@@ -70,6 +83,9 @@ func main() {
 			"timestamp": time.Now().Unix(),
 		})
 	})
+
+	// Swagger documentation
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// API routes
 	v1 := router.Group("/api/v1")
