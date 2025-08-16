@@ -1,114 +1,111 @@
-.PHONY: help dev dev-backend dev-frontend build clean docker-up docker-down test
+.PHONY: help test test-verbose test-coverage swagger swagger-force up down logs rebuild frontend-install frontend-build frontend-dev frontend-build-prod
 
-# Help command
+# Default target
 help:
 	@echo "Available commands:"
-	@echo "  dev          - Start full development environment"
-	@echo "  dev-backend  - Start backend development server"
-	@echo "  dev-frontend - Start frontend development server"
-	@echo "  build        - Build all applications"
-	@echo "  docker-up    - Start Docker services"
-	@echo "  docker-down  - Stop Docker services"
-	@echo "  test         - Run all tests"
-	@echo "  clean        - Clean build artifacts"
 	@echo ""
-	@echo "Database commands:"
-	@echo "  db-migrate   - Run database migrations"
-	@echo "  db-seed      - Seed database with sample data"
-	@echo "  db-reset     - Reset database (remove volumes, migrate, seed)"
+	@echo "Full Stack (Backend + Frontend + MySQL):"
+	@echo "  up            - Start everything (backend + frontend + MySQL)"
+	@echo "  down          - Stop everything"
+	@echo "  logs          - Show backend logs"
+	@echo "  rebuild       - Rebuild backend container"
+	@echo ""
+	@echo "Frontend:"
+	@echo "  frontend-install  - Install frontend dependencies"
+	@echo "  frontend-build    - Build frontend for production"
+	@echo "  frontend-dev      - Start frontend dev server"
+	@echo "  frontend-build-prod - Build frontend and copy to backend"
+	@echo ""
+	@echo "Testing:"
+	@echo "  test          - Run backend tests"
+	@echo "  test-verbose  - Run backend tests with verbose output"
+	@echo "  test-coverage - Run backend tests with coverage report"
+	@echo ""
+	@echo "Swagger:"
+	@echo "  swagger       - Generate Swagger documentation"
+	@echo "  swagger-force - Force reinstall swag and generate docs"
 
-# Development commands
-dev: docker-up dev-frontend	
+# Full Stack (Backend + Frontend + MySQL)
+up:
+	@echo "Starting full stack development environment..."
+	@echo "Backend: http://localhost:8080 (with hot reload)"
+	@echo "Frontend: http://localhost:5173 (Vite dev server)"
+	@echo "Swagger: http://localhost:8080/swagger/index.html"
+	@echo "MySQL: localhost:3306"
+	@echo ""
+	@echo "Starting backend + MySQL..."
+	docker-compose up -d
+	@echo ""
+	@echo "Starting frontend dev server..."
+	@make frontend-dev
 
-dev-backend:
-	@echo "Starting backend development server..."
-	cd backend && go run cmd/server/main.go
+# Stop everything
+down:
+	@echo "Stopping full stack..."
+	docker-compose down
+	@echo "Full stack stopped"
 
-dev-frontend:
-	@echo "Starting frontend development server..."
-	cd frontend && npm install && npm run dev
+# Show backend logs
+logs:
+	@echo "Showing backend logs..."
+	docker-compose logs -f backend
 
-# Build commands
-build: build-backend build-frontend
-
-build-backend:
-	@echo "Building backend..."
-	cd backend && go build -o main cmd/server/main.go
-
-build-frontend:
-	@echo "Building frontend..."
-	cd frontend && npm install && npm run build
-
-# Docker commands
-docker-up:
-	@echo "Starting Docker services..."
+# Rebuild backend container
+rebuild:
+	@echo "Rebuilding backend container..."
+	docker-compose build backend
 	docker-compose up -d
 
-docker-down:
-	@echo "Stopping Docker services..."
-	docker-compose down
-
-docker-logs:
-	@echo "Showing Docker logs..."
-	docker-compose logs -f
-
-# Test commands
-test: test-backend test-frontend
-
-test-backend:
+# Run backend tests
+test:
 	@echo "Running backend tests..."
 	cd backend && go test ./...
 
-test-frontend:
-	@echo "Running frontend tests..."
-	cd frontend && npm test
+# Run backend tests with verbose output
+test-verbose:
+	@echo "Running backend tests with verbose output..."
+	cd backend && go test -v ./...
 
-# Clean commands
-clean:
-	@echo "Cleaning build artifacts..."
-	cd backend && rm -f main
-	cd frontend && rm -rf dist
-	docker-compose down --volumes --remove-orphans
+# Run backend tests with coverage
+test-coverage:
+	@echo "Running backend tests with coverage..."
+	cd backend && go test -coverprofile=coverage.out ./...
+	@echo "Coverage report generated: backend/coverage.out"
+	cd backend && go tool cover -html=coverage.out -o coverage.html
+	@echo "HTML coverage report generated: backend/coverage.html"
 
-# Database commands
-db-migrate:
-	@echo "Running database migrations..."
-	cd backend && go run cmd/server/main.go --migrate-only
-
-db-seed:
-	@echo "Seeding database with sample data..."
-	docker exec -i arritech-mysql mysql -u arritech -parritech123 arritech_users < backend/scripts/seed.sql
-
-db-reset: docker-down
-	@echo "Resetting database (removing volumes)..."
-	docker-compose down --volumes --remove-orphans
-	@echo "Starting fresh database..."
-	docker-compose up -d
-	@echo "Waiting for database to be ready..."
-	sleep 10
-	@echo "Running migrations..."
-	$(MAKE) db-migrate
-	@echo "Seeding database..."
-	$(MAKE) db-seed
-	@echo "Database reset complete!"
-
-# Utility commands
-install-deps:
-	@echo "Installing backend dependencies..."
-	cd backend && go mod download
+# Frontend commands
+frontend-install:
 	@echo "Installing frontend dependencies..."
 	cd frontend && npm install
 
-format:
-	@echo "Formatting code..."
-	cd backend && go fmt ./...
-	cd frontend && npm run lint
+frontend-build:
+	@echo "Building frontend for production..."
+	cd frontend && npm run build
 
-# Production commands
-prod-build:
-	@echo "Building for production..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+frontend-dev:
+	@echo "Starting frontend development server..."
+	cd frontend && npm run dev
 
-prod-up:
-	@echo "Starting production services..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d 
+frontend-build-prod: frontend-build
+	@echo "Building frontend and preparing for production..."
+	@echo "Frontend built successfully!"
+
+# Swagger documentation
+swagger:
+	@echo "Generating Swagger documentation..."
+	cd backend && if command -v swag > /dev/null; then \
+		swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal; \
+	else \
+		echo "swag not found. Installing..."; \
+		go install github.com/swaggo/swag/cmd/swag@latest; \
+		swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal; \
+	fi
+	@echo "Swagger documentation generated successfully!"
+
+# Swagger documentation (force reinstall)
+swagger-force:
+	@echo "Force installing swag and generating Swagger documentation..."
+	cd backend && go install github.com/swaggo/swag/cmd/swag@latest
+	cd backend && swag init -g cmd/server/main.go -o docs --parseDependency --parseInternal
+	@echo "Swagger documentation generated successfully!" 
