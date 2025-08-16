@@ -23,11 +23,11 @@ services:
       timeout: 20s
       retries: 10
 
-  # Backend API
+  # Backend API (Funciona em dev e prod)
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: arritech-backend
     restart: unless-stopped
     environment:
@@ -40,11 +40,15 @@ services:
       DB_PARSE_TIME: "True"
       DB_LOC: Local
       SERVER_PORT: 8080
-      GIN_MODE: release
-      LOG_LEVEL: info
-      LOG_FORMAT: json
+      GIN_MODE: debug
+      LOG_LEVEL: debug
+      LOG_FORMAT: text
     ports:
       - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - /app/tmp
+      - /app/vendor
     depends_on:
       mysql:
         condition: service_healthy
