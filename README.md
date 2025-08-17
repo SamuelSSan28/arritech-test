@@ -5,8 +5,6 @@ A fullstack web application for managing users with Vue.js frontend and Go backe
 ## Requirements Checklist
 
 ### Core Requirements
-- ✅ Vue.js frontend application
-- ✅ Go backend with JSON API
 - ✅ MySQL database integration
 - ✅ CRUD operations for users
 - ✅ Search functionality
@@ -92,21 +90,7 @@ npm run dev
 - `per_page`: Items per page (default: 10, max: 100)
 - `search`: Search term for name, email, or phone
 
-## Project Structure
-
-```
-arritech-test/
-├── backend/                 # Go backend
-│   ├── cmd/server/         # Entry point
-│   ├── internal/           # Application code
-│   ├── pkg/                # Public packages
-│   └── scripts/            # Database scripts
-├── frontend/               # Vue.js frontend
-│   ├── src/components/     # UI components
-│   ├── src/views/          # Pages
-│   └── src/services/       # API services
-└── docker-compose.yml      # Docker services
-```
+``
 
 ## Technology Stack
 
@@ -123,7 +107,3 @@ cd backend && go test ./...
 # Frontend
 cd frontend && npm run test
 ```
-
-## License
-
-ISC License 
