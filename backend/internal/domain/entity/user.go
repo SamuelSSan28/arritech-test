@@ -24,23 +24,6 @@ func (User) TableName() string {
 	return "users"
 }
 
-// CalculateAge calculates the age from date of birth
-func (u *User) CalculateAge() int {
-	if u.DateOfBirth.IsZero() {
-		return 0
-	}
-
-	today := time.Now()
-	age := today.Year() - u.DateOfBirth.Year()
-
-	// Adjust if birthday hasn't occurred this year
-	if today.YearDay() < u.DateOfBirth.YearDay() {
-		age--
-	}
-
-	return age
-}
-
 // CreateUserRequest represents the request payload for creating a user
 type CreateUserRequest struct {
 	Name        string `json:"name" validate:"required,min=2,max=100"`
